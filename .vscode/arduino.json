@@ -1,5 +1,0 @@
-{
-    "board": "arduino:avr:uno",
-    "sketch": "injector_control_stepper\\injector_control.ino",
-    "port": "COM6"
-}
