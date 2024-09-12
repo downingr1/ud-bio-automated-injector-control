@@ -17,6 +17,7 @@ AccelStepper injector(AccelStepper::FULL4WIRE, 8, 9, 10, 11); // Defaults to Acc
 int steps = 0;
 int stepsprev = 200;
 bool restart = false;
+bool safety = false;
 
 // for hamiltion 7000.5 --could maybe make a lookup for both syringes
 // 8.33333333 nL per mm
@@ -82,8 +83,11 @@ void start_injector(bool inject) {
   Serial.println("\nReady. Hit Physical Button to begin."); 
   
   while (true) {
-    if (digitalRead(13)==HIGH) {                            
-      break; // Hangs until button is pressed
+    if (digitalRead(13)==HIGH) {        // Hangs until button is pressed
+      while (digitalRead(13)==HIGH){
+            // Hangs until button is released
+      }
+      break;
     }
   }
   if (inject) {
@@ -96,7 +100,7 @@ void start_injector(bool inject) {
   }
   injector.setSpeed(steppsec);
   
-  while(true) {
+  while(digitalRead(13)==LOW) {   // Should stop when button is pressed -- but may not be immediate
     injector.runSpeedToPosition();
 
     if (injector.currentPosition()==injector.targetPosition()) {
@@ -106,6 +110,10 @@ void start_injector(bool inject) {
     }
   }
   
+  if (!restart) {
+    safety = true;
+  }
+
   steps = 0;
 }
 
@@ -135,6 +143,10 @@ void loop() {
     Serial.println("Finished\n");
     printInstructions();
     restart = false;
+  } else if (safety) {
+    Serial.println("Safety tripped, please extract and reset.\n");
+    printInstructions();
+    safety = false;
   }
   if(Serial.available()){
     char val = Serial.read();
