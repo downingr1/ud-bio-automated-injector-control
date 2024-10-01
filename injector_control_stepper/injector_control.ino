@@ -100,7 +100,7 @@ void start_injector(bool inject) {
   }
   injector.setSpeed(steppsec);
   
-  while(digitalRead(13)==LOW) {   // Should stop when button is pressed -- but may not be immediate
+  while(digitalRead(12)==LOW || !inject) {   // Should stop when button is pressed -- but may not be immediate
     injector.runSpeedToPosition();
 
     if (injector.currentPosition()==injector.targetPosition()) {
