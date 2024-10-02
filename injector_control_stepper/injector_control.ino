@@ -3,8 +3,7 @@
   April 2024
 
   This program establishes serial control over an automated microinjector.
-  See documentation for instructions [Google Docs Link]
-
+  
 */
 
 
