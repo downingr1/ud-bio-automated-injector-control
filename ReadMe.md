@@ -29,7 +29,7 @@ This documentation will detail how to install Microsoft Visual Studio Code and a
 
 If a message from the device is not displayed, press the reset button (physical button in corner of expansion board) on the Arduino controller.  
 ![](/readme_images/terminal_view.png)  
-To send messages and interact with the device, click into the bar at the bottom of the Serial Monitor window. It should read Type in a message to send to the serial port. while waiting for an input.
+To send messages and interact with the device, click into the bar at the bottom of the Serial Monitor window. It should read `Type in a message to send to the serial port.` while waiting for an input.
 
 
 ### Programming Arduino in VS Code
