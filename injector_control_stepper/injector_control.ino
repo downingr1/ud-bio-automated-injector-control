@@ -52,12 +52,7 @@ void start_injector(bool inject) {
       break;
     }
   }
-
-  lin_speed = flow / HAM_7000_5_DIV; 
-
-  float rpm = lin_speed / lead; // handy for stepper motors
-  float steppsec = rpm / 60.0 * 200.0;
-  
+ 
   
   Serial.println("\nInput Volume (nL):"); 
   while (true) {
@@ -67,6 +62,13 @@ void start_injector(bool inject) {
     }
   }
   
+  lin_speed = flow / HAM_7000_5_DIV; 
+
+  float rpm = lin_speed / lead; // handy for stepper motors
+  float steppsec = rpm / 60.0 * 200.0;
+
+  steps = 1 / (HAM_7000_5_DIV * lead / vol / stepsprev);
+
   //Debug Info
   Serial.print("flow rate: ");
   Serial.println(flow);
@@ -77,7 +79,7 @@ void start_injector(bool inject) {
   Serial.print("vol: ");
   Serial.println(vol); 
   
-  steps = 1 / (HAM_7000_5_DIV * lead / vol / stepsprev);
+
   
   Serial.println("\nReady. Hit Physical Button to begin."); 
   
@@ -110,16 +112,88 @@ void start_injector(bool inject) {
   }
   
   if (!restart) {
+    injector.setCurrentPosition(0);
     safety = true;
   }
 
   steps = 0;
 }
 
+int xValue = 0; // To store value of the X axis
+int yValue = 0; // To store value of the Y axis
+
+int upthresh = 640;
+int downthresh = 400;
+
+void manual() {
+  Serial.println("Begin Manual Control. Press the Physical Button to exit.");
+  while(digitalRead(13)==LOW) {
+      // read analog X and Y analog values
+    xValue = analogRead(A2);
+
+    if (xValue > upthresh) {
+      float flow, lin_speed, vol;
+      flow = 300;
+      vol = 500;
+
+      lin_speed = flow / HAM_7000_5_DIV; 
+
+      float rpm = lin_speed / lead; // handy for stepper motors
+      float steppsec = rpm / 60.0 * 200.0;
+
+      steps = 1 / (HAM_7000_5_DIV * lead / vol / stepsprev);
+
+      injector.move(-steps);
+      injector.setSpeed(steppsec);
+
+      while(digitalRead(12)==LOW && xValue > upthresh) {
+        xValue = analogRead(A2);
+        injector.runSpeedToPosition();
+
+        if (injector.currentPosition()==injector.targetPosition()) {
+            injector.setCurrentPosition(0);
+            restart = true;
+            break;
+        }
+      }
+    }
+    if (xValue < downthresh) {
+      float flow, lin_speed, vol;
+      flow = 300;
+      vol = 500;
+
+      lin_speed = flow / HAM_7000_5_DIV; 
+
+      float rpm = lin_speed / lead; // handy for stepper motors
+      float steppsec = rpm / 60.0 * 200.0;
+
+      steps = 1 / (HAM_7000_5_DIV * lead / vol / stepsprev);
+
+      injector.move(steps);
+      injector.setSpeed(steppsec);
+
+      while(xValue < downthresh) {
+        xValue = analogRead(A2);
+        injector.runSpeedToPosition();
+
+        if (injector.currentPosition()==injector.targetPosition()) {
+            injector.setCurrentPosition(0);
+            restart = true;
+            break;
+        }
+      }
+
+    }
+  }
+  restart = true;
+}
+
+
 void printInstructions() {
   Serial.println("Input the number associated with a mode to begin: ");
   Serial.println("`1` - Extraction Mode");
   Serial.println("`2` - Injection Mode");
+  Serial.println("`3` - Manual Joystick Control");
   Serial.println("`0` - Stop");
   Serial.println();
   Serial.println("Press the reset button on the device to exit any mode and see this message again.");
@@ -159,6 +233,9 @@ void loop() {
         break;
       case '2': // Mode for injection
         start_injector (true);
+        break;
+      case '3':
+        manual();
         break;
 
       case '0':
