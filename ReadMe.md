@@ -1,6 +1,6 @@
 # **UD Automated Stereotaxic Injector**
 
-This project has been developed by Owen Beer, Reilly Downing, and Megan LaBelle in support of Dr. Aaron Sathyanesan and Dr. Krishna Kidambi with the University of Dayton Biology and Mechanical Engineering departments.
+This project has been developed by Owen Beer, Reilly Downing, and Megan LaBelle in support of Dr. Aaron Sathyanesan, Dr. Krishna Kidambi, and Mr. Abbas Raza with the University of Dayton Biology and Mechanical Engineering departments.
 
 The Automated Injector is constructed with 3D printed housings, a Nema 8 stepper, an  Arduino starter kit, and various hardware. A full parts list is available as a part of this package.
 
@@ -8,9 +8,16 @@ The Automated Injector is constructed with 3D printed housings, a Nema 8 stepper
 Stereotaxic surgeries are a very common procedure in modern neuroscience. They are minimally invasive procedures that use focused radiation beams to treat tumors and do research. The University of Dayton Biology Department uses a GCaMP6f Ca2+ sensor to image the firing of neurons after injecting a virus into the brain of a living specimen. This virus causes the calcium indicators (GCaMP6f Ca2+) to be present, which can then be imaged using a specific wavelength laser. The injection of the virus however must be a very controlled process to avoid harming the specimen. Commonly, labs will buy syringe pumps with controllers that run around $3,000. The University of Dayton Biology department has assigned the team the task of designing this open-source alternative solution using readily available, cost-efficient components and an Arduino microcontroller.
 
 ### Repository Layout
-...
+This repository follows a simple structure.
+  - The `diagrams` folder holds diagrams for wiring the arduino control board to the motor and switches. 
+  - The `documentation` folder holds the spec sheet for the NEMA 8 Stepper motor as well as the assembly procedure for the automated injector.
+  - The `injector_control_ino` folder contains the code used to program the arduino.
+  - The `models` folder contains the CAD files used to design and print the injector housing
+  - The `read_me` images folder contains the images shown below.
 
 ### Programming Arduino Using the Arduino IDE
+The most user-friendly way to program and communicate with an Arduino is through the Arduino IDE. The latest IDE can be collected from [https://www.arduino.cc/en/software](https://www.arduino.cc/en/software). 
+
 ...
 
 ### Simply Executing Serial Communication in VS Code 
