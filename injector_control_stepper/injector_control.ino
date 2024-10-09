@@ -185,7 +185,7 @@ void manual() {
 
     }
   }
-
+  restart = true;
 }
 
 
