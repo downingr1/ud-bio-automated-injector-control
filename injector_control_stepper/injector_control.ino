@@ -10,7 +10,7 @@
 #include <Stepper.h>
 #include <AccelStepper.h>
  
-AccelStepper injector(AccelStepper::FULL4WIRE, 8, 9, 10, 11); // Defaults to AccelStepper::FULL4WIRE (4 pins) on 2, 3, 4, 5
+AccelStepper injector(AccelStepper::DRIVER, 8, 9); // Defaults to AccelStepper::FULL4WIRE (4 pins) on 2, 3, 4, 5
 
 
 int steps = 0;
@@ -32,7 +32,6 @@ void stop() {
   injector.stop();
   injector.setCurrentPosition(0);
 }
-
 
 
 void start_injector(bool inject) {
@@ -101,8 +100,23 @@ void start_injector(bool inject) {
   }
   injector.setSpeed(steppsec);
   
-  while( (digitalRead(12)==LOW || !inject) && digitalRead(13)==LOW) {   // Should stop when button is pressed -- but may not be immediate
+  while( (digitalRead(12)==LOW || !inject) ) {   // Should stop when button is pressed -- but may not be immediate
     injector.runSpeedToPosition();
+
+    if(digitalRead(13)==HIGH) {
+      Serial.println("**\n**PAUSING - Press Button Again to Resume\n**\n");
+      while(true){
+        if (digitalRead(13)==LOW) {        // Hangs until button is pressed
+          while (digitalRead(13)==LOW){
+                // Hangs until button is Pressed
+          }
+          while(digitalRead(13)==HIGH) {
+                // Hangs until button is released
+          }
+          break;
+        }
+      }
+    }
 
     if (injector.currentPosition()==injector.targetPosition()) {
         injector.setCurrentPosition(0);
