@@ -101,7 +101,7 @@ void start_injector(bool inject) {
   }
   injector.setSpeed(steppsec);
   
-  while(digitalRead(12)==LOW || !inject) {   // Should stop when button is pressed -- but may not be immediate
+  while( (digitalRead(12)==LOW || !inject) && digitalRead(13)==LOW) {   // Should stop when button is pressed -- but may not be immediate
     injector.runSpeedToPosition();
 
     if (injector.currentPosition()==injector.targetPosition()) {
@@ -133,7 +133,7 @@ void manual() {
 
     if (xValue > upthresh) {
       float flow, lin_speed, vol;
-      flow = 300;
+      flow = 600;
       vol = 500;
 
       lin_speed = flow / HAM_7000_5_DIV; 
@@ -159,7 +159,7 @@ void manual() {
     }
     if (xValue < downthresh) {
       float flow, lin_speed, vol;
-      flow = 300;
+      flow = 600;
       vol = 500;
 
       lin_speed = flow / HAM_7000_5_DIV; 
@@ -194,7 +194,6 @@ void printInstructions() {
   Serial.println("`1` - Extraction Mode");
   Serial.println("`2` - Injection Mode");
   Serial.println("`3` - Manual Joystick Control");
-  Serial.println("`0` - Stop");
   Serial.println();
   Serial.println("Press the reset button on the device to exit any mode and see this message again.");
 }
@@ -238,9 +237,6 @@ void loop() {
         manual();
         break;
 
-      case '0':
-        stop();
-        break;
       }
     }
     else stop();
