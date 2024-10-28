@@ -10,11 +10,11 @@
 #include <Stepper.h>
 #include <AccelStepper.h>
  
-AccelStepper injector(AccelStepper::FULL4WIRE, 8, 9, 10, 11); // Defaults to AccelStepper::FULL4WIRE (4 pins) on 2, 3, 4, 5
+AccelStepper injector(AccelStepper::DRIVER, 8, 9); // Defaults to AccelStepper::FULL4WIRE (4 pins) on 2, 3, 4, 5
 
 
 int steps = 0;
-int stepsprev = 200;
+int stepsprev = 1600;
 bool restart = false;
 bool safety = false;
 
@@ -32,7 +32,6 @@ void stop() {
   injector.stop();
   injector.setCurrentPosition(0);
 }
-
 
 
 void start_injector(bool inject) {
@@ -65,7 +64,7 @@ void start_injector(bool inject) {
   lin_speed = flow / HAM_7000_5_DIV; 
 
   float rpm = lin_speed / lead; // handy for stepper motors
-  float steppsec = rpm / 60.0 * 200.0;
+  float steppsec = rpm / 60.0 * stepsprev;
 
   steps = 1 / (HAM_7000_5_DIV * lead / vol / stepsprev);
 
@@ -101,8 +100,24 @@ void start_injector(bool inject) {
   }
   injector.setSpeed(steppsec);
   
-  while(digitalRead(12)==LOW || !inject) {   // Should stop when button is pressed -- but may not be immediate
+  while( (digitalRead(12)==LOW || !inject) ) {   // Should stop when button is pressed -- but may not be immediate
     injector.runSpeedToPosition();
+
+    if(digitalRead(13)==HIGH) {
+      Serial.println("**\n**PAUSING - Press Button Again to Resume, Press Reset to Stop\n**\n");
+      while(true){
+        if (digitalRead(13)==LOW) {        // Hangs until button is pressed
+          while (digitalRead(13)==LOW){
+                // Hangs until button is Pressed
+          }
+          while(digitalRead(13)==HIGH) {
+                // Hangs until button is released
+          }
+          Serial.println("**\n**RESUMING \n**\n");
+          break;
+        }
+      }
+    }
 
     if (injector.currentPosition()==injector.targetPosition()) {
         injector.setCurrentPosition(0);
@@ -133,13 +148,13 @@ void manual() {
 
     if (xValue > upthresh) {
       float flow, lin_speed, vol;
-      flow = 300;
+      flow = 600;
       vol = 500;
 
       lin_speed = flow / HAM_7000_5_DIV; 
 
       float rpm = lin_speed / lead; // handy for stepper motors
-      float steppsec = rpm / 60.0 * 200.0;
+      float steppsec = rpm / 60.0 * stepsprev;
 
       steps = 1 / (HAM_7000_5_DIV * lead / vol / stepsprev);
 
@@ -159,13 +174,13 @@ void manual() {
     }
     if (xValue < downthresh) {
       float flow, lin_speed, vol;
-      flow = 300;
+      flow = 600;
       vol = 500;
 
       lin_speed = flow / HAM_7000_5_DIV; 
 
       float rpm = lin_speed / lead; // handy for stepper motors
-      float steppsec = rpm / 60.0 * 200.0;
+      float steppsec = rpm / 60.0 * stepsprev;
 
       steps = 1 / (HAM_7000_5_DIV * lead / vol / stepsprev);
 
@@ -194,7 +209,6 @@ void printInstructions() {
   Serial.println("`1` - Extraction Mode");
   Serial.println("`2` - Injection Mode");
   Serial.println("`3` - Manual Joystick Control");
-  Serial.println("`0` - Stop");
   Serial.println();
   Serial.println("Press the reset button on the device to exit any mode and see this message again.");
 }
@@ -206,7 +220,7 @@ void setup() {
   Serial.println("In VS Code, click into the message box below and type the desired value. Then, hit enter to send the message to the injector.");
   printInstructions();
   injector.setCurrentPosition(0);
-  injector.setMaxSpeed(1000);
+  injector.setMaxSpeed(8000);
 }
 
 
@@ -238,9 +252,6 @@ void loop() {
         manual();
         break;
 
-      case '0':
-        stop();
-        break;
       }
     }
     else stop();
