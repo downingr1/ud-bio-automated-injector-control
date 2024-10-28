@@ -154,7 +154,7 @@ void manual() {
       lin_speed = flow / HAM_7000_5_DIV; 
 
       float rpm = lin_speed / lead; // handy for stepper motors
-      float steppsec = rpm / 60.0 * 200.0;
+      float steppsec = rpm / 60.0 * stepsprev;
 
       steps = 1 / (HAM_7000_5_DIV * lead / vol / stepsprev);
 
