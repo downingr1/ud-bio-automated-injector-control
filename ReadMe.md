@@ -28,9 +28,11 @@ This documentation will detail how to install Microsoft Visual Studio Code and a
 1. Retrieve the appropriate installer for your operating system from [https://code.visualstudio.com/download](https://code.visualstudio.com/download)   
 2. Run the installer, the default location is fine. Changing the location will not affect this process.  
 3. Open VS Code  
+![](/readme_images/vs_home.png)  
 4. Open the extensions menu ( ctrl \+ shift \+ x ) and search for Serial Monitor 
 5. Select the extension marked as produced by Microsoft, then select install
 6. At the top of the window, select Terminal > New Terminal
+![](/readme_images/vs_new-terminal.png)  
 7. In the new partition at the bottom of the window, select SERIAL MONITOR
 8. With the device plugged in, ensure that the Port drop down has the correct port selected, ensure a buad rate of 115200, and select Start Monitoring.
 
