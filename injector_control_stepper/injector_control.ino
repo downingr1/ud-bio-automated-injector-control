@@ -13,7 +13,7 @@
 AccelStepper injector(AccelStepper::DRIVER, 8, 9); // Defaults to AccelStepper::FULL4WIRE (4 pins) on 2, 3, 4, 5
 
 
-int steps = 0;
+long steps = 0;
 int stepsprev = 1600;
 bool restart = false;
 bool safety = false;
@@ -22,20 +22,29 @@ bool safety = false;
 // 8.33333333 nL per mm
 float HAM_7000_5_DIV = 25 / 3;
 
-// given lead/pitch of our rod
+// given lead/pitch of our rod (mm/rotation)
 float lead = 0.6096;
 
 
 void stop() {
-  pinMode(13, INPUT);
-  Serial.println("Stopped\n");
   injector.stop();
   injector.setCurrentPosition(0);
+  Serial.println("Stopped\n");
 }
 
 
+long getsteps(float vol) {
+  return (vol * stepsprev) / (HAM_7000_5_DIV * lead );
+}
+
+float getsteppsec(float flow) {
+  float lin_speed = flow / HAM_7000_5_DIV;
+  float rpm = lin_speed / lead; // handy for stepper motors
+  return rpm / 60.0 * stepsprev;
+}
+
 void start_injector(bool inject) {
-  float flow, lin_speed, vol;
+  float flow, vol;
 
   if (inject) {
     Serial.println("**Injection Mode**"); 
@@ -48,7 +57,9 @@ void start_injector(bool inject) {
   while (true) {
     if (Serial.available()) {                            
       flow = Serial.parseFloat(); //returns a zero if it times out or no valid ints are available
-      break;
+      if (flow < 1 || flow > 1000) {
+        Serial.println("Flow rate must be between 1 and 1000 nL/min\nInput Flow Rate (nL/min):");
+      } else {break;}
     }
   }
  
@@ -57,27 +68,25 @@ void start_injector(bool inject) {
   while (true) {
     if (Serial.available()) {                            
       vol = Serial.parseFloat(); //returns a zero if it times out or no valid ints are available
-      break;
+      if (vol < 1 || vol > 500) {
+        Serial.println("Volume must be between 1 and 500 nL\nInput Volume (nL):");
+      } else {break;}
     }
   }
   
-  lin_speed = flow / HAM_7000_5_DIV; 
+  float steppsec = getsteppsec(flow);
 
-  float rpm = lin_speed / lead; // handy for stepper motors
-  float steppsec = rpm / 60.0 * stepsprev;
-
-  steps = 1 / (HAM_7000_5_DIV * lead / vol / stepsprev);
+  steps = getsteps(vol);
 
   //Debug Info
-  Serial.print("flow rate: ");
+  Serial.print("flow rate: \t");
   Serial.println(flow);
-  Serial.print("lin_speed: ");
-  Serial.println(lin_speed);
-  Serial.print("rpm: ");
-  Serial.println(rpm);
-  Serial.print("vol: ");
+  Serial.print("vol: \t\t");
   Serial.println(vol); 
-  
+  Serial.print("Steps/sec: \t");
+  Serial.println(steppsec);
+  Serial.print("Steps: \t\t");
+  Serial.println(steps);
 
   
   Serial.println("\nReady. Hit Physical Button to begin."); 
@@ -140,6 +149,7 @@ int yValue = 0; // To store value of the Y axis
 int upthresh = 640;
 int downthresh = 400;
 
+
 void manual() {
   Serial.println("Begin Manual Control. Press the Physical Button to exit.");
   while(digitalRead(13)==LOW) {
@@ -147,16 +157,9 @@ void manual() {
     xValue = analogRead(A2);
 
     if (xValue > upthresh) {
-      float flow, lin_speed, vol;
-      flow = 600;
-      vol = 500;
-
-      lin_speed = flow / HAM_7000_5_DIV; 
-
-      float rpm = lin_speed / lead; // handy for stepper motors
-      float steppsec = rpm / 60.0 * stepsprev;
-
-      steps = 1 / (HAM_7000_5_DIV * lead / vol / stepsprev);
+      
+      float steppsec = getsteppsec(600);
+      steps = getsteps(500);
 
       injector.move(-steps);
       injector.setSpeed(steppsec);
@@ -164,25 +167,11 @@ void manual() {
       while(digitalRead(12)==LOW && xValue > upthresh) {
         xValue = analogRead(A2);
         injector.runSpeedToPosition();
-
-        if (injector.currentPosition()==injector.targetPosition()) {
-            injector.setCurrentPosition(0);
-            restart = true;
-            break;
-        }
       }
     }
     if (xValue < downthresh) {
-      float flow, lin_speed, vol;
-      flow = 600;
-      vol = 500;
-
-      lin_speed = flow / HAM_7000_5_DIV; 
-
-      float rpm = lin_speed / lead; // handy for stepper motors
-      float steppsec = rpm / 60.0 * stepsprev;
-
-      steps = 1 / (HAM_7000_5_DIV * lead / vol / stepsprev);
+      float steppsec = getsteppsec(600);
+      steps = getsteps(500);
 
       injector.move(steps);
       injector.setSpeed(steppsec);
@@ -190,16 +179,11 @@ void manual() {
       while(xValue < downthresh) {
         xValue = analogRead(A2);
         injector.runSpeedToPosition();
-
-        if (injector.currentPosition()==injector.targetPosition()) {
-            injector.setCurrentPosition(0);
-            restart = true;
-            break;
-        }
       }
 
     }
   }
+  injector.setCurrentPosition(0);
   restart = true;
 }
 
@@ -226,6 +210,7 @@ void setup() {
 
 
 void loop() {
+  injector.setCurrentPosition(0);
   if(restart){
     Serial.println("Finished\n");
     printInstructions();
