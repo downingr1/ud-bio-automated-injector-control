@@ -75,3 +75,5 @@ This documentation will detail how to install Microsoft Visual Studio Code, and 
    }
    ```
 10. Open injector_control.ino and select the verify then upload options from the arduino extensions up in the top right of the editor. On errors regarding missing libraries, ensure that the accel_stepper library is included in your arduino libraries path.
+
+![](/readme_images/upload_code.png)
