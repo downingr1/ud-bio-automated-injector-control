@@ -20,7 +20,10 @@ bool safety = false;
 
 // for hamiltion 7000.5 --could maybe make a lookup for both syringes
 // 8.33333333 nL per mm
-float HAM_7000_5_DIV = 25 / 3;
+const float HAM_7000_5_DIV = 25 / 3;
+const float HAM_7001_DIV = 50 / 3;
+
+float syringe_div;
 
 // given lead/pitch of our rod (mm/rotation)
 float lead = 0.6096;
@@ -34,11 +37,11 @@ void stop() {
 
 
 long getsteps(float vol) {
-  return (vol * stepsprev) / (HAM_7000_5_DIV * lead );
+  return (vol * stepsprev) / (syringe_div * lead );
 }
 
 float getsteppsec(float flow) {
-  float lin_speed = flow / HAM_7000_5_DIV;
+  float lin_speed = flow / syringe_div;
   float rpm = lin_speed / lead; // handy for stepper motors
   return rpm / 60.0 * stepsprev;
 }
@@ -109,19 +112,18 @@ void start_injector(bool inject) {
   }
   injector.setSpeed(steppsec);
   
-  while( (digitalRead(12)==LOW || !inject) ) {   // Should stop when button is pressed -- but may not be immediate
+  while( (digitalRead(12)==LOW || !inject) ) {   
     injector.runSpeedToPosition();
 
     if(digitalRead(13)==HIGH) {
       Serial.println("**\n**PAUSING - Press Button Again to Resume, Press Reset to Stop\n**\n");
       while(true){
-        if (digitalRead(13)==LOW) {        // Hangs until button is pressed
-          while (digitalRead(13)==LOW){
-                // Hangs until button is Pressed
-          }
-          while(digitalRead(13)==HIGH) {
-                // Hangs until button is released
-          }
+        delay(1);
+        if (digitalRead(13)==LOW) {   
+          delay(1);     // tiniest debouncing code to prevent errant pausing
+          while (digitalRead(13)==LOW){/* Hangs until button is Pressed*/}
+          while(digitalRead(13)==HIGH){/* Hangs until button is released*/}
+          delay(1);
           Serial.println("**\n**RESUMING \n**\n");
           break;
         }
@@ -187,21 +189,75 @@ void manual() {
   restart = true;
 }
 
+void select_syringe() {
+  bool selected = false;
+  Serial.println("Input the number associated with the desired syringe: ");
+  Serial.println("`1` - Hamilton 7000.5 0.5uL");
+  Serial.println("`2` - Hamilton 7001 1uL");
+  Serial.println("`3` - Custom");
+  Serial.println("`4` - Exit without changing");
+  while (!selected) {
+    if(Serial.available()){
+      char val = Serial.read();
+      switch(val)
+      {
+      case '1': // Mode to Fill the syringe
+        syringe_div = HAM_7000_5_DIV;
+        Serial.println("Hamilton 7000.5 0.5uL Selected.\n");
+        selected = true;
+        break;
+      case '2': // Mode for injection
+        syringe_div = HAM_7001_DIV;
+        Serial.println("Hamilton 7001 1uL Selected.\n");
+        selected = true;
+        break;
+      case '3':
+        syringe_div = get_div();
+        Serial.println("Custom syringe set.\n");
+        selected = true;
+        break;
+      case '4':
+        Serial.println("Syringe not updated.\n");
+        selected = true;
+        break;
+      }
+    }
+  }
+  restart = true;
+}
+
+float get_div() {
+  float div;
+  Serial.println("Input Custom Syringe Volume per Millimeter (nL/mm):"); 
+  while (true) {
+    if (Serial.available()) {                            
+      div = Serial.parseFloat(); //returns a zero if it times out or no valid ints are available
+      if (div < 1 || div > 1000) {
+        Serial.println("Syringe gradation must be between 1 and 1000 nanoliters per linear millimeter.\nInput value (nL/mm):");
+      } else {break;}
+    }
+  }
+  return div;
+}
+
 
 void printInstructions() {
   Serial.println("Input the number associated with a mode to begin: ");
   Serial.println("`1` - Extraction Mode");
   Serial.println("`2` - Injection Mode");
   Serial.println("`3` - Manual Joystick Control");
+  Serial.println("`4` - Select Syringe");
   Serial.println();
   Serial.println("Press the reset button on the device to exit any mode and see this message again.");
 }
 
 void setup() {
   Serial.begin(115200);      //Set Baud Rate (115200 default rate in VS Code Serial Monitor)
+  syringe_div = HAM_7000_5_DIV;
   Serial.println("Run keyboard control");
   Serial.println("This Injector is controlled through serial communication. This has been tested using VS Code's arduino extension, though Arduino IDE's serial monitor or any other serial interface should work.");
   Serial.println("In VS Code, click into the message box below and type the desired value. Then, hit enter to send the message to the injector.");
+  Serial.println("Default Syringe: 0.5uL");
   printInstructions();
   injector.setCurrentPosition(0);
   injector.setMaxSpeed(8000);
@@ -222,7 +278,6 @@ void loop() {
   }
   if(Serial.available()){
     char val = Serial.read();
-    Serial.println(val);
     if(val != -1)
     {
       switch(val)
@@ -235,6 +290,9 @@ void loop() {
         break;
       case '3':
         manual();
+        break;
+      case '4':
+        select_syringe();
         break;
 
       }

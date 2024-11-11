@@ -1,5 +1,8 @@
 # **UD Automated Stereotaxic Injector**
 
+![](/readme_images/injector.png) 
+![](/diagrams/injector_arduino.png)
+
 This project has been developed by Owen Beer, Reilly Downing, and Megan LaBelle in support of Dr. Aaron Sathyanesan, Dr. Krishna Kidambi, and Mr. Abbas Raza with the University of Dayton Biology and Mechanical Engineering departments.
 
 The Automated Injector is constructed with 3D printed housings, a Nema 8 stepper, an  Arduino starter kit, and various hardware. A full parts list is available as a part of this package.
@@ -13,7 +16,7 @@ This repository follows a simple structure.
   - The `documentation` folder holds the spec sheet for the NEMA 8 Stepper motor as well as the assembly procedure for the automated injector.
   - The `injector_control_ino` folder contains the code used to program the arduino.
   - The `models` folder contains the CAD files used to design and print the injector housing
-  - The `read_me` images folder contains the images shown below.
+  - The `readme_images` folder contains the images shown below.
 
 ### Programming Arduino Using the Arduino IDE
 The most user-friendly way to program and communicate with an Arduino is through the Arduino IDE. The latest IDE can be collected from [https://www.arduino.cc/en/software](https://www.arduino.cc/en/software). 
