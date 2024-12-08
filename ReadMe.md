@@ -3,14 +3,14 @@
 ![](/readme_images/injector.png) 
 
 > [Arduino Uno Wiring Diagram - Tinkercad](https://www.tinkercad.com/things/jYT1CjaT22d-november-2024-injector-control?sharecode=C9nnUTwrhzWC7_K2SykUDTFZvW9YDyTTlg0h3D3HC3E)
-![](/diagrams/injector_arduino.png)
+![](/diagrams/injector_arduino.png) ![](/readme_images/controller_wiring.png)
 
 This project has been developed by Owen Beer, Reilly Downing, and Megan LaBelle in support of Dr. Aaron Sathyanesan, Dr. Krishna Kidambi, and Mr. Abbas Raza with the University of Dayton Biology and Mechanical Engineering departments.
 
 The Automated Injector is constructed with 3D printed housings, a Nema 8 stepper, an  Arduino starter kit, and various hardware. A full parts list is available as a part of this package.
 
 ### Purpose
-Stereotaxic surgeries are a very common procedure in modern neuroscience. They are minimally invasive procedures that use focused radiation beams to treat tumors and do research. The University of Dayton Biology Department uses a GCaMP6f Ca2+ sensor to image the firing of neurons after injecting a virus into the brain of a living specimen. This virus causes the calcium indicators (GCaMP6f Ca2+) to be present, which can then be imaged using a specific wavelength laser. The injection of the virus however must be a very controlled process to avoid harming the specimen. Commonly, labs will buy syringe pumps with controllers that run around $3,000. The University of Dayton Biology department has assigned the team the task of designing this open-source alternative solution using readily available, cost-efficient components and an Arduino microcontroller.
+Stereotaxic surgeries are a very common procedure in modern neuroscience. The University of Dayton Biology Department uses a GCaMP6f Ca2+ sensor to image the firing of neurons after injecting a virus into the brain of a living specimen. This virus causes the calcium indicators (GCaMP6f Ca2+) to be present, which can then be imaged using a specific wavelength laser. The injection of the virus however must be a very controlled process to avoid harming the specimen. Commonly, labs will buy syringe pumps with controllers that run around $3,000. The University of Dayton Biology department has assigned the team the task of designing this open-source alternative solution using readily available, cost-efficient components and an Arduino microcontroller.
 
 ### Repository Layout
 This repository follows a simple structure.
